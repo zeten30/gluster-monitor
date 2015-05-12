@@ -138,6 +138,7 @@ The program's design makes the following compromises;
    gtop resets the stats for the node and marks the node as unknown for that sample run. Nodes 
    marked as not responding continue to be polled, so as and when they 'recover' data is 
    made available in the interface.
+3. Option "realStorageUnits 0" must be in snmpd.conf if you have volumes > 16T 
    
 It's also worth noting that the netsnmp bindings for python are synchronous, which can block
 the data gathering process. To address this, gtop uses the multiprocessing module, placing the snmp interation

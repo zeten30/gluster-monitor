@@ -48,7 +48,10 @@ def convertBytes(inBytes):
 		displayBytes = '%dM' % size
 	elif bytes >= 1024:
 		size = int(round(bytes / 1024))
-		displayBytes = '%dK' % size 
+		displayBytes = '%dK' % size
+	elif bytes < 0:
+		size = 0
+		displayBytes = 'Err'
 	else:
 		displayBytes = '%db' % bytes 
 

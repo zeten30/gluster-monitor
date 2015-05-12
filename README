@@ -81,7 +81,8 @@ All Nodes
 5. enable snmpd to start at boot with chkconfig
 6. [Recommended] Update rc.local file to allow the network stats to be refreshed every second by adding
    snmpset -c <community name> -v2c  127.0.0.1 1.3.6.1.4.1.8072.1.5.3.1.2.1.3.6.1.2.1.2.2 i 1
-7. start snmpd (service snmpd start), and run the snmpset command
+7. [Optional] add option "realStorageUnits 0" in snmpd.conf if you have volumes > 16T 
+8. start snmpd (service snmpd start), and run the snmpset command
 
 Single node or All nodes
 1. cd to the gluster-monitor directory (e.g. cd /root/gluster-montor)

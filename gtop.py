@@ -142,13 +142,24 @@ class GLUSTERvol:
 								
 		if numBlocks < 1:
 			numBlocks = 1
+
+		if numBlocks > 100:
+			numBlocks = 1
+
+		if pctUsed > 100:
+			pctUsedStr = 'Err'
+		else:
+			pctUsedStr = str(pctUsed) + "%"
 					
 		# Use '>' initially so each 'block' will only be 1 char (encoding to unicode block occupies
 		# 3 characters of text in the string, so using > keeps the formatting correct
-		bar = ">"*numBlocks
+		if pctUsedStr != 'Err':
+			bar = ">"*numBlocks
+		else:
+			bar = ""
 								
 		# Add the bar to the volume data, including a spacer added to the end
-		volData = volData + "  " + bar + " " + str(pctUsed) + "%"
+		volData = volData + "  " + bar + " " + pctUsedStr
 				
 		spacer = 79 - len(volData)
 		volData += " "*spacer
@@ -315,7 +326,10 @@ class Cluster:
 		# 2. a dict pointing a given brick to a volume object that contains the brick
 		#-----------------------------------------------------------------------------------
 		for thisDir in os.listdir(volDir):
-			volFile = os.path.join(volDir,thisDir,thisDir + "-fuse.vol")
+			volFile = os.path.join(volDir,thisDir,thisDir + ".tcp-fuse.vol")
+			if not os.path.isfile(volFile):
+				volFile = os.path.join(volDir,thisDir,thisDir + "-fuse.vol")
+
 			thisVol = GLUSTERvol(name=thisDir)
 			self.volumes.append(thisVol)
 			
@@ -946,8 +960,10 @@ class GLUSTERhost:
 		
 
 		s.oid = netsnmp.Varbind('hrStorageSize')				# .1.3.6.1.2.1.25.2.3.1.5
-																
 		sizeData = s.query()
+
+		s.oid = netsnmp.Varbind('hrStorageAllocationUnits')     # .1.3.6.1.2.1.25.2.3.1.4
+		sizeAllocUnit = s.query()
 
 		if sizeData:
 			for ctr,ptr in self.brickfsOffsets:
@@ -955,9 +971,9 @@ class GLUSTERhost:
 
 				#if ctr <= len(sizeData):
 
-				# The sizes returned by the query are in allocation units, which is 4k 
-				# so by multipling by 4096 gives bytes
-				self.brickInfo[ptr][0] = int(sizeData[ctr]) * 4096	
+				# The sizes returned by the query are in allocation units
+				# so by multipling by hrStorageAllocationUnits gives bytes
+				self.brickInfo[ptr][0] = int(sizeData[ctr]) * int(sizeAllocUnit[ctr])
 																
 		else:
 			self.errMsg = "query for filesystem size data failed"
@@ -972,7 +988,7 @@ class GLUSTERhost:
 			for ctr,ptr in self.brickfsOffsets:
 
 				#if ctr<= len(usedData):
-				self.brickInfo[ptr][1] = int(usedData[ctr]) * 4096
+				self.brickInfo[ptr][1] = int(usedData[ctr]) * int(sizeAllocUnit[ctr])
 					
 
 		else:
